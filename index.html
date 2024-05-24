@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore Ingredienti</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #000;
+            height: 100vh;
+            justify-content: center;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(147, 74, 74, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        input, select, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .result p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 0;">Calcolatore Ingredienti</h1>
+        <label for="ingredient">Ingrediente:</label>
+        <select id="ingredient">
+            <option value="flour">Farina (kg)</option>
+            <option value="yeast">Lievito (g)</option>
+            <option value="water">Acqua totale (litri)</option>
+            <option value="salt">Sale (g)</option>
+            <option value="oil">Olio (litri)</option>
+        </select>
+        <label for="quantity">Quantità:</label>
+        <input type="number" id="quantity" placeholder="Inserisci la quantità">
+        <button onclick="calculateIngredients()">Calcola Ingredienti</button>
+        <div id="results" class="result"></div>
+    </div>
+
+    <script>
+        // Proporzioni predefinite degli ingredienti
+        const defaultProportions = {
+            flour: 30,
+            yeast: 45,
+            water: 22.5,
+            salt: 750,
+            oil: 1
+        };
+
+        function calculateIngredients() {
+            const ingredient = document.getElementById('ingredient').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('Per favore, inserisci una quantità valida.');
+                return;
+            }
+
+            // Calcola le proporzioni degli ingredienti in base alla quantità inserita
+            const proportions = {};
+
+            if (ingredient === 'water') {
+                const water1 = (19 / 22.5 * quantity).toFixed(2).replace(/\.?0+$/, '');
+                const water2 = (3.5 / 22.5 * quantity).toFixed(2).replace(/\.?0+$/, '');
+                proportions['water1'] = water1;
+                proportions['water2'] = water2;
+                
+                // Calcola gli altri ingredienti in base alla quantità di acqua totale
+                for (const key in defaultProportions) {
+                    if (key !== 'water') {
+                        proportions[key] = (defaultProportions[key] * (parseFloat(water1) + parseFloat(water2)) / defaultProportions['water']).toFixed(2).replace(/\.?0+$/, '');
+                    }
+                }
+            } else {
+                for (const key in defaultProportions) {
+                    if (key !== 'water') {
+                        proportions[key] = (defaultProportions[key] * quantity / defaultProportions[ingredient]).toFixed(2).replace(/\.?0+$/, '');
+                    }
+                }
+                // Calcola le dosi di acqua solo se non è stato inserito l'ingrediente acqua direttamente
+                const water1 = (19 / 30 * proportions.flour).toFixed(2).replace(/\.?0+$/, '');
+                const water2 = (3.5 / 30 * proportions.flour).toFixed(2).replace(/\.?0+$/, '');
+                proportions['water1'] = water1;
+                proportions['water2'] = water2;
+            }
+
+            // Mostra i risultati
+            document.getElementById('results').innerHTML = `
+                <p>Farina: ${proportions.flour} kg</p>
+                <p>Lievito: ${proportions.yeast} g</p>
+                <p>Acqua (prima dose): ${proportions.water1} litri</p>
+                <p>Sale: ${proportions.salt} g</p>
+                <p>Olio: ${proportions.oil} litri</p>
+                <p>Acqua (seconda dose): ${proportions.water2} litri</p>
+            `;
+        }
+    </script>
+</body>
+</html>
